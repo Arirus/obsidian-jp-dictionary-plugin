@@ -1,25 +1,48 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
-
+import { SampleModal, TranslateModal } from 'modals';
+import { App, Editor, MarkdownView, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { TranslatorSettings } from 'settings';
 // Remember to rename these classes and interfaces!
 
-interface MyPluginSettings {
-	mySetting: string;
+const DEFAULT_SETTINGS: TranslatorSettings = {
+	dst: "ja"
 }
 
-const DEFAULT_SETTINGS: MyPluginSettings = {
-	mySetting: 'default'
-}
 
 export default class MyPlugin extends Plugin {
-	settings: MyPluginSettings;
+	settings: TranslatorSettings;
 
 	async onload() {
+		console.log('loading plugin')
+
 		await this.loadSettings();
 
 		// This creates an icon in the left ribbon.
-		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
+		const ribbonIconEl = this.addRibbonIcon('languages', 'Sample Plugin', (evt: MouseEvent) => {
+
+			// new TranslateModal(this.app, "ds").open()
+
 			// Called when the user clicks the icon.
-			new Notice('This is a notice!');
+			// const menu = new Menu();
+
+			// menu.addItem((item) =>
+			// 	item
+			// 		.setTitle("Copy")
+			// 		.setIcon("documents")
+			// 		.onClick(() => {
+			// 			new Notice("Copied");
+			// 		})
+			// );
+
+			// menu.addItem((item) =>
+			// 	item
+			// 		.setTitle("Paste")
+			// 		.setIcon("paste")
+			// 		.onClick(() => {
+			// 			new Notice("Pasted");
+			// 		})
+			// );
+
+			// menu.showAtMouseEvent(evt);
 		});
 		// Perform additional things with the ribbon
 		ribbonIconEl.addClass('my-plugin-ribbon-class');
@@ -27,6 +50,15 @@ export default class MyPlugin extends Plugin {
 		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
 		const statusBarItemEl = this.addStatusBarItem();
 		statusBarItemEl.setText('Status Bar Text');
+
+		this.addCommand({
+			id: 'translate',
+			name: 'Translate',
+			hotkeys: [{ modifiers: ["Mod", "Alt"], key: "p" }],
+			editorCallback: (editor: Editor) => {
+				new TranslateModal(this.app, editor.getSelection(), this.settings).open();
+			}
+		})
 
 		// This adds a simple command that can be triggered anywhere
 		this.addCommand({
@@ -79,7 +111,7 @@ export default class MyPlugin extends Plugin {
 	}
 
 	onunload() {
-
+		console.log('onunload plugin')
 	}
 
 	async loadSettings() {
@@ -91,21 +123,11 @@ export default class MyPlugin extends Plugin {
 	}
 }
 
-class SampleModal extends Modal {
-	constructor(app: App) {
-		super(app);
-	}
 
-	onOpen() {
-		const {contentEl} = this;
-		contentEl.setText('Woah!');
-	}
 
-	onClose() {
-		const {contentEl} = this;
-		contentEl.empty();
-	}
-}
+
+
+
 
 class SampleSettingTab extends PluginSettingTab {
 	plugin: MyPlugin;
@@ -116,11 +138,11 @@ class SampleSettingTab extends PluginSettingTab {
 	}
 
 	display(): void {
-		const {containerEl} = this;
+		const { containerEl } = this;
 
 		containerEl.empty();
 
-		containerEl.createEl('h2', {text: 'Settings for my awesome plugin.'});
+		containerEl.createEl('h2', { text: 'Settings for my awesome plugin.' });
 
 		new Setting(containerEl)
 			.setName('Setting #1')
