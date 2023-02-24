@@ -1,5 +1,6 @@
-import { App, Editor, Modal, Setting } from 'obsidian';
+import { App, Modal, Setting } from 'obsidian';
 import { TranslatorSettings } from 'settings';
+import { bingTranslate } from 'translate';
 
 
 
@@ -56,13 +57,7 @@ export class TranslateModal extends Modal {
         new Setting(contentEl)
             .setName("翻译")
             .setDesc("使用Bing进行翻译")
-            .addTextArea((text) => {
-                text.setValue(this.queryString)
-                text.setPlaceholder("翻译内容")
-                text.onChange((value) => {
-                    this.queryString = value
-                })
-            }).addDropdown((drop) => {
+            .addDropdown((drop) => {
                 drop.addOption("en", "英语")
                 drop.addOption("ja", "日语")
                 drop.addOption("cn-zh", "中文")
@@ -70,18 +65,43 @@ export class TranslateModal extends Modal {
                     settings.dst = value
                     console.log("Arirus Dropdown", value)
                 }))
+            })
+            .addText((text) => {
+                text.setValue(this.queryString)
+                text.setPlaceholder("翻译内容")
+                text.onChange((value) => {
+                    this.queryString = value
+                })
             });
 
 
         new Setting(contentEl)
+            .setClass("translate_submit_btn")
             .addButton((btn) =>
-                btn
-                    .setButtonText("Submit")
+                btn.setButtonText("Submit")
                     .setCta()
-                    .onClick(() => {
-                        this.close();
-                    }));
+                    .onClick(this.onSubmit));
 
+    }
+
+    onSubmit() {
+        const { contentEl, settings } = this;
+        // contentEl.find("translate_submit_btn").
+        const loadingView = createEl('div', {
+            cls: 'translator_container-overlay',
+            text: 'Translating...'
+        })
+        const resultView = createEl('div', {
+            cls: 'translator_container-result',
+            text: 'Result'
+        })
+
+        contentEl.appendChild(loadingView)
+        bingTranslate(this.queryString, "", settings.dst, (result: string) => {
+            contentEl.removeChild(loadingView)
+            resultView.
+                contentEl.appendChild
+        })
     }
 
     onClose(): void {
