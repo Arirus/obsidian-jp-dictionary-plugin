@@ -1,6 +1,7 @@
-import { App, Modal, Setting } from 'obsidian';
+import { App, Modal, Setting, ButtonComponent, Notice, TextComponent } from 'obsidian';
 import { TranslatorSettings } from 'settings';
-import { bingTranslate } from 'translate';
+import { bingTranslate, chatTranslate } from 'translate';
+
 
 
 
@@ -33,9 +34,71 @@ export class PanelModal extends Modal {
     }
 }
 
+export class ChatGPTModal extends Modal {
+
+    queryString: string
+
+    loadingView = createEl('div', {
+        cls: 'translator_container-overlay',
+        text: 'Translating...'
+    })
+    containerView = createDiv({ cls: "translator_container", title: "Bing" })
+
+
+    constructor(app: App,
+        queryString: string) {
+        super(app)
+
+
+        this.queryString = queryString
+    }
+
+    onOpen(): void {
+        const { containerView, contentEl } = this
+
+
+        const textArea = new TextComponent(contentEl).setPlaceholder("输出")
+
+        new ButtonComponent(contentEl).setButtonText("翻译").onClick(() => {
+
+            containerView.appendChild(createEl('div', {
+                cls: 'translator_container-bing-src',
+                text: textArea.getValue(),
+            }))
+            chatTranslate(textArea.getValue(), "", "", (result) => {
+                containerView.appendChild(createEl('div', {
+                    cls: 'translator_container-bing-dst',
+                    text: result,
+                }))
+            })
+
+        })
+
+        contentEl.appendChild(this.containerView)
+
+    }
+
+
+
+}
+
+
+
 export class TranslateModal extends Modal {
     queryString: string
     settings: TranslatorSettings
+
+    containerView = createDiv({ cls: "translator_container", title: "Bing" })
+
+    loadingView = createEl('div', {
+        cls: 'translator_container-overlay',
+        text: 'Translating...'
+    })
+
+    resultView = createEl('div', {
+        cls: 'translator_container-result',
+        text: 'Result'
+    })
 
     constructor(app: App,
         queryString: string,
@@ -49,7 +112,7 @@ export class TranslateModal extends Modal {
 
 
     onOpen(): void {
-        const { containerEl, contentEl, settings } = this
+        const { containerView, contentEl, settings } = this
         contentEl.createEl('h1', { text: 'Translator', cls: 'translator_title' })
 
 
@@ -75,32 +138,56 @@ export class TranslateModal extends Modal {
             });
 
 
+        const onSubmit = () => {
+            containerView.empty()
+
+            containerView.appendChild(this.loadingView)
+            bingTranslate(this.queryString, "", settings.dst, (result: string) => {
+                containerView.removeChild(this.loadingView)
+                containerView.appendChild(this.resultView)
+                containerView.appendChild(createEl('div', {
+                    cls: 'translator_container-bing-src',
+                    text: this.queryString,
+                }))
+                containerView.appendChild(createEl('div', {
+                    cls: 'translator_container-bing-dst',
+                    text: result,
+                }))
+            })
+        }
+
         new Setting(contentEl)
             .setClass("translate_submit_btn")
             .addButton((btn) =>
                 btn.setButtonText("Submit")
                     .setCta()
-                    .onClick(this.onSubmit));
+                    .setDisabled(false)
+                    .onClick(onSubmit));
+
+        contentEl.appendChild(this.containerView)
+
+
 
     }
 
-    onSubmit() {
+
+    onSubmit1(): void {
         const { contentEl, settings } = this;
         // contentEl.find("translate_submit_btn").
-        const loadingView = createEl('div', {
-            cls: 'translator_container-overlay',
-            text: 'Translating...'
-        })
-        const resultView = createEl('div', {
-            cls: 'translator_container-result',
-            text: 'Result'
-        })
 
-        contentEl.appendChild(loadingView)
+
+
+        const settingCommpont = contentEl.getElementsByClassName("translate_submit_btn");
+
+        contentEl.appendChild(this.loadingView)
+        contentEl.removeChild(this.resultView)
         bingTranslate(this.queryString, "", settings.dst, (result: string) => {
-            contentEl.removeChild(loadingView)
-            resultView.
-                contentEl.appendChild
+            contentEl.removeChild(this.loadingView)
+            contentEl.appendChild(this.resultView)
+            this.resultView.appendChild(createEl('div', {
+                cls: 'translator_container-bing',
+                text: result
+            }))
         })
     }
 

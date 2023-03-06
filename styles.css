@@ -6,3 +6,10 @@ available in the app when your plugin is enabled.
 If your plugin does not need CSS, delete this file.
 
 */
+
+
+.translator_container-bing-dst {
+    font-size: 16px;
+    font-weight: bold;
+    color: #67C23A;
+}

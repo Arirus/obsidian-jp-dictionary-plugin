@@ -1,4 +1,4 @@
-import { SampleModal, TranslateModal } from 'modals';
+import { SampleModal, TranslateModal, ChatGPTModal } from 'modals';
 import { App, Editor, MarkdownView, Plugin, PluginSettingTab, Setting } from 'obsidian';
 import { TranslatorSettings } from 'settings';
 // Remember to rename these classes and interfaces!
@@ -59,6 +59,17 @@ export default class MyPlugin extends Plugin {
 				new TranslateModal(this.app, editor.getSelection(), this.settings).open();
 			}
 		})
+
+
+		this.addCommand({
+			id: 'chatgpt',
+			name: 'ChatGPT',
+			hotkeys: [{ modifiers: ["Mod", "Alt"], key: "p" }],
+			editorCallback: (editor: Editor) => {
+				new ChatGPTModal(this.app, editor.getSelection()).open();
+			}
+		})
+
 
 		// This adds a simple command that can be triggered anywhere
 		this.addCommand({
