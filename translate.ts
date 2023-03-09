@@ -3,7 +3,7 @@ import { translate } from "bing-translate-api";
 import { Configuration, OpenAIApi } from 'openai';
 
 const configuration = new Configuration({
-    apiKey: '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',
+    apiKey: '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',
 });
 const openai = new OpenAIApi(configuration);
 
